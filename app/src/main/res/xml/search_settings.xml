@@ -17,6 +17,7 @@
         android:summary="@string/preference_show_search_suggestions_summary"/>
 
     <org.mozilla.focus.autocomplete.AutocompletePreference
+        android:defaultValue="false"
         android:key="@string/pref_key_screen_autocomplete"
         android:layout="@layout/focus_preference_no_icon"
         android:summary="WHAT?"
