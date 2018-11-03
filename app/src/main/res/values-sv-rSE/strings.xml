@@ -6,6 +6,7 @@
   <string name="urlbar_hint">Sök eller ange adress</string>
   <string name="teaser">Automatisk privat surfning.\nSurfa. Radera. Upprepa.</string>
   <string name="feedback_erase">Din webbhistorik har raderats.</string>
+  <string name="feedback_erase_custom_tab">Flikens surfhistorik har raderats.</string>
   <string name="search_hint">Sök efter %1$s</string>
   <string name="menu_share">Dela…</string>
   <string name="menu_report_site_issue">Rapportera webbplatsproblem</string>
@@ -18,6 +19,9 @@
   <string name="menu_help">Hjälp</string>
   <string name="menu_rights">Dina rättigheter</string>
   <string name="menu_trackers_blocked_title">Trackers blockerade</string>
+  <string name="menu_trackers_blocked_subtitle">Om du stänger av kan det fixa några webbplatsproblem</string>
+  <string name="menu_content_blocking">Innehållsblockering</string>
+  <string name="menu_content_blocking_subtitle">Stäng av för att fixa vissa webbplatser</string>
   <string name="menu_custom_tab_branding">Levereras av %1$s</string>
   <string name="share_dialog_title">Dela via</string>
   <string name="notification_erase_text">Radera webbhistorik</string>
@@ -25,6 +29,8 @@
   <string name="notification_action_erase_and_open">Radera och öppna</string>
   <string name="shortcut_erase_short_label">Radera</string>
   <string name="shortcut_erase_long_label">Radera webbhistorik</string>
+  <string name="shortcut_erase_and_open_short_label">Radera &amp; öppna</string>
+  <string name="shortcut_erase_and_open_long_label">Radera och öppna %1$s</string>
   <string name="text_selection_search_action">Sök privat</string>
   <string name="about_content"><![CDATA[<p xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">%1$s ger dig full kontroll.</p>\n<p xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">"Anv&#228;nd den som en privat webbl&#228;sare:\n  "<ul>"\n    "<li>S&#246;k och surfa direkt i appen</li>"\n    "<li>Blockera trackers (eller uppdatera inst&#228;llningar att till&#229;ta trackers)</li>"\n    "<li>Radera f&#246;r att ta bort kakor samt s&#246;k- och webbhistorik</li>"\n  "</ul>\n</p>\n<p xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">%1$s &#228;r utvecklad av Mozilla. V&#229;rt uppdrag &#228;r att fr&#228;mja ett h&#228;lsosamt, &#246;ppet Internet.<br/>\n<a href="%2$s">L&#228;s mer</a></p>]]></string>
   <string name="preference_privacy_and_security_header">Sekretess &amp; säkerhet</string>
@@ -35,22 +41,26 @@
   <string name="preference_category_web_content">Webbinnehåll</string>
   <string name="preference_category_switching_apps">Växla appar</string>
   <string name="preference_category_general">Allmänt</string>
+  <string name="preference_general_summary">Standardwebbläsare, flikar, språk</string>
   <string name="preference_category_data_collection_use">Datainsamling &amp; användning</string>
   <string name="preference_category_search">Sök</string>
   <string name="preference_show_search_suggestions">Få sökförslag</string>
   <string name="preference_show_search_suggestions_summary">%1$s skickar det du skriver i adressfältet till din sökmotor</string>
   <string name="preference_search_engine_default">Standard</string>
+  <string name="preference_search_engine_label">Sökmotor</string>
   <string name="preference_state_on">På</string>
   <string name="preference_state_off">Av</string>
   <string name="preference_subitem_autocomplete">Autokomplettera webbadress</string>
-  <string name="preference_switch_autocomplete">Autokomplettera</string>
-  <string name="preference_category_autocomplete_preinstalled">Standard webbadresslista</string>
-  <string name="preference_autocomplete_preinstalled_summary">Aktivera %1$s att automatiskt komplettera över 450 populära webbadresser i adressfältet.</string>
-  <string name="preference_category_autocomplete_custom_urls">Anpassade webbadresser</string>
-  <string name="preference_autocomplete_subitem_customlist">Anpassade webbadresser</string>
+  <string name="preference_switch_autocomplete_topsites">För toppwebbplatser</string>
+  <string name="preference_autocomplete_topsite_summary">Aktivera för att autokomplettera mer än 450 populära webbadresser i adressfältet.</string>
+  <string name="preference_switch_autocomplete_user_list">För webbplatser du lägger till</string>
+  <string name="preference_autocomplete_user_list_summary">Aktivera för att autokomplettera mer än 450 populära webbadresser i adressfältet.</string>
+  <string name="preference_category_autocomplete_manage_sites">Hantera webbplatser</string>
+  <string name="preference_autocomplete_subitem_manage_sites">Hantera webbplatser</string>
   <string name="preference_autocomplete_action_add">+ Lägg till anpassad webbadress</string>
   <string name="preference_autocomplete_title_add">Lägg till anpassad webbadress</string>
   <string name="custom_autocomplete_quick_add">Lägg till anpassad webbadress</string>
+  <string name="add_custom_autocomplete_label">Lägg till länk till autokomplettering</string>
   <string name="preference_category_cookies">Kakor och webbplatsdata</string>
   <string name="preference_category_data_choices">Dataval</string>
   <string name="preference_autocomplete_title_remove">Ta bort anpassade webbadresser</string>
@@ -77,6 +87,7 @@
   <string name="preference_privacy_block_content_summary2">Aktivering kan leda till att vissa sidor uppträder oväntat</string>
   <string name="preference_privacy_category_cookies">Blockera kakor</string>
   <string name="preference_privacy_should_block_cookies_no_option">Nej</string>
+  <string name="preference_privacy_should_block_cookies_third_party_tracker_cookies_option">Blockera endast tredjepartspårarkakor</string>
   <string name="preference_privacy_should_block_cookies_third_party_only_option">Blockera endast tredjepartskakor</string>
   <string name="preference_privacy_should_block_cookies_yes_option">Ja</string>
   <string name="preference_security_biometric">Använd fingeravtryck för att låsa upp appen</string>
@@ -120,6 +131,7 @@
   <string name="accessibility_announcement_loading">Laddar</string>
   <string name="accessibility_announcement_loading_finished">Webbplats laddad</string>
   <string name="content_description_menu">Fler alternativ</string>
+  <string name="indicator_content_description_menu">Knappen fler alternativ</string>
   <string name="content_description_forward">Navigera framåt</string>
   <string name="content_description_reload">Ladda om webbplats</string>
   <string name="content_description_back">Navigera bakåt</string>
@@ -156,6 +168,7 @@
   <string name="error_sslhandshake_message"><![CDATA[<ul xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">"\n  "<li>Det kan vara ett problem med serverns konfiguration, eller det kan vara\nn&#229;gon som f&#246;rs&#246;ker imitera servern.</li>"\n  "<li>Om du har anslutit till den h&#228;r servern med framg&#229;ng i det f&#246;rflutna, kan felet\nvara tillf&#228;lligt, och du kan f&#246;rs&#246;ka igen senare.</li>\n</ul>]]></string>
   <string name="error_generic_title">Hoppsan</string>
   <string name="error_generic_message">Vi kan inte ladda den här sidan av någon anledning.</string>
+  <string name="contextmenu_open_in_app">Öppna med app</string>
   <string name="contextmenu_link_share">Dela länk</string>
   <string name="contextmenu_link_copy">Kopiera länkadress</string>
   <string name="contextmenu_image_share">Dela bild</string>
@@ -229,5 +242,24 @@
   <string name="tip_autocomplete_url">Autokomplettera webbadresser för webbplatser som du använder mest\n Tryck länge på vilken URL som helst i adressfältet</string>
   <string name="tip_open_in_new_tab">Öppna en länk i en ny flik\n Tryck länge på en länk på en sida</string>
   <string name="tip_request_desktop">Vill du hellre se webbplatsen anpassad för datorer?%1$s Meny &gt; Begär datorwebbplats</string>
-  <string name="tip_disable_tips">Stäng av tips på startskärmen för %1$s</string>
+  <string name="tip_disable_tips2">Stäng av tips på startskärmen</string>
+  <string name="new_tab_opened_snackbar">Ny flik öppnad</string>
+  <string name="open_new_tab_snackbar">Växla</string>
+  <string name="preference_open_new_tab">Växla till länk i ny flik omedelbart</string>
+  <string name="preference_category_safe_browsing">Säker surfning</string>
+  <string name="preference_safe_browsing_title">Blockera potentiellt farliga och vilseledande webbplatser</string>
+  <string name="preference_safe_browsing_summary">Blockera rapporterade vilseledande webbplatser och de som angriper dig, distribuerar skadlig kod eller oönskad programvara.</string>
+  <string name="preference_exceptions">Undantag</string>
+  <string name="preference_exceptions_description">Du har inaktiverat innehållsblockering för dessa webbplatser.</string>
+  <string name="preference_exceptions_menu_remove">Ta bort</string>
+  <string name="preference_exceptions_remove_all_button_label">Ta bort alla webbplatser</string>
+  <string name="tab_crash_report_title">Fliken kraschade</string>
+  <string name="tab_crash_report_headline">Förlåt. Vi har ett problem med den här fliken.</string>
+  <string name="tab_crash_report_description">Som en privat webbläsare sparar vi aldrig och kan inte återställa den här fliken.</string>
+  <string name="tab_crash_report_close_tab_button_label">Stäng flik</string>
+  <string name="fatal_crash_report_title">Förlåt. %1$s hade problem och kraschade.</string>
+  <string name="fatal_crash_report_description">Som en privat webbläsare sparar vi aldrig och kan inte återställa din senaste surfsession.</string>
+  <string name="fatal_crash_report_close_button_label">Stäng</string>
+  <string name="fatal_crash_report_restart_firefox_label">Starta om %1$s</string>
+  <string name="crash_report_send_crash_label">Skicka kraschrapport till Mozilla</string>
 </resources>
