@@ -50,8 +50,10 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.browser_display_toolbar.*
+import kotlinx.android.synthetic.main.fragment_browser.*
 import mozilla.components.browser.session.Session
 import mozilla.components.browser.session.SessionManager
+import mozilla.components.lib.crash.Crash
 import mozilla.components.support.utils.ColorUtils
 import mozilla.components.support.utils.DownloadUtils
 import mozilla.components.support.utils.DrawableUtils
@@ -63,6 +65,8 @@ import org.mozilla.focus.biometrics.BiometricAuthenticationDialogFragment
 import org.mozilla.focus.biometrics.BiometricAuthenticationHandler
 import org.mozilla.focus.biometrics.Biometrics
 import org.mozilla.focus.broadcastreceiver.DownloadBroadcastReceiver
+import org.mozilla.focus.exceptions.ExceptionDomains
+import org.mozilla.focus.ext.isSearch
 import org.mozilla.focus.ext.requireComponents
 import org.mozilla.focus.ext.shouldRequestDesktopSite
 import org.mozilla.focus.findinpage.FindInPageCoordinator
@@ -77,6 +81,7 @@ import org.mozilla.focus.session.SessionCallbackProxy
 import org.mozilla.focus.session.removeAndCloseAllSessions
 import org.mozilla.focus.session.removeAndCloseSession
 import org.mozilla.focus.session.ui.SessionsSheetFragment
+import org.mozilla.focus.telemetry.CrashReporterWrapper
 import org.mozilla.focus.telemetry.TelemetryWrapper
 import org.mozilla.focus.utils.AppConstants
 import org.mozilla.focus.utils.Browsers
@@ -92,6 +97,7 @@ import org.mozilla.focus.widget.AnimatedProgressBar
 import org.mozilla.focus.widget.FloatingEraseButton
 import org.mozilla.focus.widget.FloatingSessionsButton
 import java.lang.ref.WeakReference
+import java.net.URI
 
 /**
  * Fragment for displaying the browser UI.
@@ -266,7 +272,6 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
         closeFindInPage = view.findViewById(R.id.close_find_in_page)
         closeFindInPage!!.setOnClickListener(this)
 
-        setBlockingEnabled(session.trackerBlockingEnabled)
         setShouldRequestDesktop(session.shouldRequestDesktopSite)
 
         LoadTimeObserver.addObservers(session, this)
@@ -318,6 +323,7 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
         // values automatically yet.
         // We want to change that in Android Components: https://github.com/mozilla-mobile/android-components/issues/665
         sessionObserver.apply {
+            onTrackerBlockingEnabledChanged(session, session.trackerBlockingEnabled)
             onLoadingStateChanged(session, session.loading)
             onUrlChanged(session, session.url)
             onSecurityChanged(session, session.securityInfo)
@@ -670,6 +676,61 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
         }
     }
 
+    private fun showCrashReporter(crash: Crash) {
+        val fragmentManager = requireActivity().supportFragmentManager
+
+        Log.e("crash:", crash.toString())
+        if (crashReporterIsVisible()) {
+            // We are already displaying the crash reporter
+            // No need to show another one.
+            return
+        }
+
+        val crashReporterFragment = CrashReporterFragment.create()
+
+        crashReporterFragment.onCloseTabPressed = { sendCrashReport ->
+            if (sendCrashReport) { CrashReporterWrapper.submitCrash(crash) }
+            hideCrashReporter()
+        }
+
+        fragmentManager
+                .beginTransaction()
+                .addToBackStack(null)
+                .add(R.id.crash_container, crashReporterFragment, CrashReporterFragment.FRAGMENT_TAG)
+                .commit()
+
+        crash_container.visibility = View.VISIBLE
+        tabs.hide()
+        erase.hide()
+        securityView?.setImageResource(R.drawable.ic_firefox)
+        menuView?.visibility = View.GONE
+        urlView?.text = requireContext().getString(R.string.tab_crash_report_title)
+    }
+
+    private fun hideCrashReporter() {
+        val fragmentManager = requireActivity().supportFragmentManager
+        val fragment = fragmentManager.findFragmentByTag(CrashReporterFragment.FRAGMENT_TAG)
+                ?: return
+
+        fragmentManager
+                .beginTransaction()
+                .remove(fragment)
+                .commit()
+
+        crash_container.visibility = View.GONE
+        tabs.show()
+        erase.show()
+        securityView?.setImageResource(R.drawable.ic_internet)
+        menuView?.visibility = View.VISIBLE
+        urlView?.text = session.let {
+            if (it.isSearch) it.searchTerms else it.url
+        }
+    }
+
+    private fun crashReporterIsVisible(): Boolean = requireActivity().supportFragmentManager.let {
+        it.findFragmentByTag(CrashReporterFragment.FRAGMENT_TAG)?.isVisible ?: false
+    }
+
     internal fun showAddToHomescreenDialog(url: String, title: String) {
         val fragmentManager = fragmentManager
 
@@ -920,7 +981,9 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
                 menuWeakReference = WeakReference(menu)
             }
 
-            R.id.display_url -> if (requireComponents.sessionManager.findSessionById(session.id) != null) {
+            R.id.display_url -> if (
+                    !crashReporterIsVisible() &&
+                    requireComponents.sessionManager.findSessionById(session.id) != null) {
                 val urlFragment = UrlInputFragment
                     .createWithSession(session, urlView!!)
 
@@ -1055,7 +1118,7 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
                 showAddToHomescreenDialog(url, title)
             }
 
-            R.id.security_info -> showSecurityPopUp()
+            R.id.security_info -> if (!crashReporterIsVisible()) { showSecurityPopUp() }
 
             R.id.report_site_issue -> {
                 val reportUrl = String.format(SupportUtils.REPORT_SITE_ISSUE_URL, url)
@@ -1131,7 +1194,7 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
 
     fun reload() = getWebView()?.reload()
 
-    fun setBlockingEnabled(enabled: Boolean) {
+    fun setBlockingUI(enabled: Boolean) {
         val webView = getWebView()
         webView?.setBlockingEnabled(enabled)
 
@@ -1248,6 +1311,7 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
     }
 
     private fun updateSecurityIcon(session: Session, securityInfo: Session.SecurityInfo = session.securityInfo) {
+        if (crashReporterIsVisible()) return
         val securityView = securityView ?: return
 
         if (!session.loading) {
@@ -1335,6 +1399,11 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
         }
 
         override fun onUrlChanged(session: Session, url: String) {
+            val host = URI(url).host
+            val isException =
+                host != null && ExceptionDomains.load(requireContext()).contains(host)
+            getWebView()?.setBlockingEnabled(!isException)
+
             urlView?.text = UrlUtils.stripUserInfo(url)
         }
 
@@ -1350,9 +1419,17 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
             }
         }
 
+        override fun onTrackerBlockingEnabledChanged(session: Session, blockingEnabled: Boolean) {
+            setBlockingUI(blockingEnabled)
+        }
+
         override fun onSecurityChanged(session: Session, securityInfo: Session.SecurityInfo) {
             updateSecurityIcon(session, securityInfo)
         }
+    }
+
+    fun handleTabCrash(crash: Crash) {
+        showCrashReporter(crash)
     }
 
     companion object {

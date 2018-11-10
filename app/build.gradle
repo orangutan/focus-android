@@ -142,7 +142,7 @@ repositories {
     maven {
         //  For the latest version of GeckoView (moving target!):
         //
-        //  Look at the Latest Firefox 63 on the mozilla-beta repository:
+        //  Look at the Latest Firefox 64 on the mozilla-beta repository:
         //  hg.mozilla.org/releases/mozilla-beta/branches
         //
         //  Click on the changeset ID to find the matching changeset/commit ID (shortened).
@@ -201,6 +201,7 @@ dependencies {
     }
     implementation "org.mozilla.components:support-ktx:$mozilla_components_version"
     implementation "org.mozilla.components:support-utils:$mozilla_components_version"
+    implementation "org.mozilla.components:lib-crash:$mozilla_components_version"
 
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
 
@@ -359,7 +360,7 @@ android.applicationVariants.all {
         buildConfigField 'String', 'SENTRY_TOKEN', '"' + token + '"'
         println "(Added from .sentry_token file)"
     } catch (FileNotFoundException ignored) {
-        buildConfigField 'String', 'SENTRY_TOKEN', 'null'
+        buildConfigField 'String', 'SENTRY_TOKEN', '""'
         println("X_X")
     }
 }
