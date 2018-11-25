@@ -51,6 +51,9 @@ import android.widget.TextView
 import android.widget.Toast
 import kotlinx.android.synthetic.main.browser_display_toolbar.*
 import kotlinx.android.synthetic.main.fragment_browser.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import mozilla.components.browser.session.Session
 import mozilla.components.browser.session.SessionManager
 import mozilla.components.lib.crash.Crash
@@ -98,6 +101,7 @@ import org.mozilla.focus.widget.FloatingEraseButton
 import org.mozilla.focus.widget.FloatingSessionsButton
 import java.lang.ref.WeakReference
 import java.net.URI
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Fragment for displaying the browser UI.
@@ -105,7 +109,8 @@ import java.net.URI
 @Suppress("LargeClass", "TooManyFunctions")
 class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
     DownloadDialogFragment.DownloadDialogListener, View.OnLongClickListener,
-    BiometricAuthenticationDialogFragment.BiometricAuthenticationListener {
+    BiometricAuthenticationDialogFragment.BiometricAuthenticationListener,
+    CoroutineScope {
 
     private var pendingDownload: Download? = null
     private var backgroundTransitionGroup: TransitionDrawableGroup? = null
@@ -155,12 +160,18 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
 
     private var biometricController: BiometricAuthenticationHandler? = null
 
+    private var job = Job()
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.Main
+
     // The url property is used for things like sharing the current URL. We could try to use the webview,
     // but sometimes it's null, and sometimes it returns a null URL. Sometimes it returns a data:
     // URL for error pages. The URL we show in the toolbar is (A) always correct and (B) what the
     // user is probably expecting to share, so lets use that here:
     val url: String
         get() = urlView!!.text.toString()
+
+    var openedFromExternalLink: Boolean = false
 
     override lateinit var session: Session
         private set
@@ -201,6 +212,11 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
 
             menuWeakReference!!.clear()
         }
+    }
+
+    override fun onStop() {
+        job.cancel()
+        super.onStop()
     }
 
     @Suppress("LongMethod", "ComplexMethod")
@@ -652,16 +668,15 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
     }
 
     internal fun showDownloadPromptDialog(download: Download) {
-        val fragmentManager = fragmentManager
+        val fragmentManager = childFragmentManager
 
-        if (fragmentManager!!.findFragmentByTag(DownloadDialogFragment.FRAGMENT_TAG) != null) {
+        if (fragmentManager.findFragmentByTag(DownloadDialogFragment.FRAGMENT_TAG) != null) {
             // We are already displaying a download dialog fragment (Probably a restored fragment).
             // No need to show another one.
             return
         }
 
         val downloadDialogFragment = DownloadDialogFragment.newInstance(download)
-        downloadDialogFragment.setTargetFragment(this@BrowserFragment, REQUEST_CODE_DOWNLOAD_DIALOG)
 
         try {
             downloadDialogFragment.show(fragmentManager, DownloadDialogFragment.FRAGMENT_TAG)
@@ -690,6 +705,7 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
 
         crashReporterFragment.onCloseTabPressed = { sendCrashReport ->
             if (sendCrashReport) { CrashReporterWrapper.submitCrash(crash) }
+            erase()
             hideCrashReporter()
         }
 
@@ -727,14 +743,14 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
         }
     }
 
-    private fun crashReporterIsVisible(): Boolean = requireActivity().supportFragmentManager.let {
+    fun crashReporterIsVisible(): Boolean = requireActivity().supportFragmentManager.let {
         it.findFragmentByTag(CrashReporterFragment.FRAGMENT_TAG)?.isVisible ?: false
     }
 
     internal fun showAddToHomescreenDialog(url: String, title: String) {
-        val fragmentManager = fragmentManager
+        val fragmentManager = childFragmentManager
 
-        if (fragmentManager!!.findFragmentByTag(AddToHomescreenDialogFragment.FRAGMENT_TAG) != null) {
+        if (fragmentManager.findFragmentByTag(AddToHomescreenDialogFragment.FRAGMENT_TAG) != null) {
             // We are already displaying a homescreen dialog fragment (Probably a restored fragment).
             // No need to show another one.
             return
@@ -746,12 +762,12 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
             session.trackerBlockingEnabled,
             session.shouldRequestDesktopSite
         )
-        addToHomescreenDialogFragment.setTargetFragment(
-            this@BrowserFragment,
-            REQUEST_CODE_ADD_TO_HOMESCREEN_DIALOG)
 
         try {
-            addToHomescreenDialogFragment.show(fragmentManager, AddToHomescreenDialogFragment.FRAGMENT_TAG)
+            addToHomescreenDialogFragment.show(
+                fragmentManager,
+                AddToHomescreenDialogFragment.FRAGMENT_TAG
+            )
         } catch (e: IllegalStateException) {
             // It can happen that at this point in time the activity is already in the background
             // and onSaveInstanceState() has already been called. Fragment transactions are not
@@ -766,7 +782,18 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
         }
     }
 
-    override fun onCreateNewSession() {
+    override fun biometricCreateNewSessionWithLink() {
+        for (session in requireComponents.sessionManager.sessions) {
+            if (session != requireComponents.sessionManager.selectedSession) {
+                requireComponents.sessionManager.remove(session)
+            }
+        }
+
+        // Purposefully not calling onAuthSuccess in case we add to that function in the future
+        view!!.alpha = 1f
+    }
+
+    override fun biometricCreateNewSession() {
         requireComponents.sessionManager.removeAndCloseAllSessions()
     }
 
@@ -784,6 +811,10 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
 
     override fun onResume() {
         super.onResume()
+
+        if (job.isCancelled) {
+            job = Job()
+        }
 
         val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
         requireContext().registerReceiver(downloadBroadcastReceiver, filter)
@@ -822,23 +853,29 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     private fun displayBiometricPromptIfNeeded() {
-        val fragmentManager = requireActivity().supportFragmentManager
+        val fragmentManager = childFragmentManager
 
         // Check that we need to auth and that the fragment isn't already displayed
-        if (biometricController!!.needsAuth) {
-            biometricController!!.startAuthentication()
+        if (biometricController!!.needsAuth || openedFromExternalLink) {
+            view!!.alpha = 0f
+            biometricController!!.startAuthentication(openedFromExternalLink)
+            openedFromExternalLink = false
 
             // Are we already displaying the biometric fragment?
             if (fragmentManager.findFragmentByTag(BiometricAuthenticationDialogFragment.FRAGMENT_TAG) != null) {
                 return
             }
 
-            biometricController!!.biometricFragment!!.setTargetFragment(
-                this@BrowserFragment, REQUEST_CODE_BIOMETRIC_PROMPT)
-            biometricController!!.biometricFragment!!.show(
-                fragmentManager,
-                BiometricAuthenticationDialogFragment.FRAGMENT_TAG
-            )
+            try {
+                biometricController!!.biometricFragment!!.show(
+                    fragmentManager,
+                    BiometricAuthenticationDialogFragment.FRAGMENT_TAG
+                )
+            } catch (e: IllegalStateException) {
+                // It can happen that at this point in time the activity is already in the background
+                // and onSaveInstanceState() has already been called. Fragment transactions are not
+                // allowed after that anymore.
+            }
         } else {
             view!!.alpha = 1f
         }
@@ -1034,6 +1071,7 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
                 requireComponents.sessionManager.select(session)
 
                 val webView = getWebView()
+                webView?.releaseGeckoSession()
                 webView?.saveWebViewState(session)
 
                 val intent = Intent(context, MainActivity::class.java)
@@ -1442,9 +1480,6 @@ class BrowserFragment : WebFragment(), LifecycleObserver, View.OnClickListener,
         private const val RESTORE_KEY_DOWNLOAD = "download"
 
         private const val INITIAL_PROGRESS = 5
-        private const val REQUEST_CODE_DOWNLOAD_DIALOG = 300
-        private const val REQUEST_CODE_ADD_TO_HOMESCREEN_DIALOG = 301
-        private const val REQUEST_CODE_BIOMETRIC_PROMPT = 302
 
         @JvmStatic
         fun createForSession(session: Session): BrowserFragment {

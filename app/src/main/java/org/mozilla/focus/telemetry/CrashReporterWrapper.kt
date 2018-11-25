@@ -7,6 +7,9 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import mozilla.components.lib.crash.Crash
 import mozilla.components.lib.crash.CrashReporter
 import mozilla.components.lib.crash.service.MozillaSocorroService
@@ -27,6 +30,7 @@ import java.util.Locale
  * value with true (upload is disabled by default in dev builds).
  */
 object CrashReporterWrapper {
+    private const val SOCORRO_APP_NAME = "Focus"
     private const val TAG_BUILD_FLAVOR: String = "build_flavor"
     private const val TAG_BUILD_TYPE: String = "build_type"
     private const val TAG_LOCALE_LANG_TAG: String = "locale_lang_tag"
@@ -57,7 +61,7 @@ object CrashReporterWrapper {
                         sentryDsn,
                         tags = createTags(context),
                         sendEventForNativeCrashes = true),
-                    MozillaSocorroService(context, "Firefox Focus")
+                    MozillaSocorroService(context, SOCORRO_APP_NAME)
                 ),
                 promptConfiguration = CrashReporter.PromptConfiguration(
                         appName = context.resources.getString(R.string.app_name)
@@ -73,7 +77,9 @@ object CrashReporterWrapper {
     }
 
     fun submitCrash(crash: Crash) {
-        crashReporter?.submitReport(crash)
+        GlobalScope.launch(IO) {
+            crashReporter?.submitReport(crash)
+        }
     }
 
     private fun createTags(context: Context) = mapOf(

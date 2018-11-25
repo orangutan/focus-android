@@ -18,6 +18,9 @@
   <string name="menu_help">Pitulung</string>
   <string name="menu_rights">Hak Sampéyan</string>
   <string name="menu_trackers_blocked_title">Palacak kablokir</string>
+  <string name="menu_trackers_blocked_subtitle">Matèni iki bisa ndandani sawetara masalah situs</string>
+  <string name="menu_content_blocking">Blokir kontèn</string>
+  <string name="menu_content_blocking_subtitle">Patèni kanggo ndandani sawetara situs</string>
   <string name="menu_custom_tab_branding">Disokong déning %1$s</string>
   <string name="share_dialog_title">Dumké liwat</string>
   <string name="notification_erase_text">Busak riwayat dlajahan</string>
@@ -31,7 +34,11 @@
   <string name="preference_category_general">Umum</string>
   <string name="preference_category_search">Golèk</string>
   <string name="preference_show_search_suggestions">Njaluk saran panggolekan</string>
+  <string name="preference_search_engine_label">Mesin panggolèk</string>
+  <string name="preference_state_on">Uripké</string>
   <string name="preference_state_off">Paténi</string>
+  <string name="preference_category_data_choices">Pilihan Data</string>
+  <string name="preference_autocomplete_learn_more">Sinau liyané</string>
   <string name="preference_autocomplete_add_hint">Témpél utowo leboké URL</string>
   <string name="preference_autocomplete_menu_remove">Busak</string>
   <string name="preference_autocomplete_action_remove_content_description">Busak</string>
@@ -44,7 +51,13 @@
   <string name="preference_performance_block_javascript">Blokir JavaScript</string>
   <string name="preference_category_mozilla">Mozilla</string>
   <string name="preference_about">Ngenani %1$s</string>
+  <string name="preference_search_installed_search_engines">Mesin panggolèk sing wis dipasang</string>
+  <string name="preference_search_restore">Mulihaké mesin panggolèk standar</string>
+  <string name="preference_search_add2">+Tambah mesin panggolèk liyané</string>
+  <string name="preference_search_remove_title">Busak mesin panggolèk</string>
   <string name="preference_search_remove">Busak</string>
+  <string name="preference_homescreen_tips">Tuduhaké tip layar</string>
+  <string name="action_option_add_search_engine">Tambah mesin panggolèk</string>
   <string name="search_add_manually_name_hint">Jeneng mesin panggolèk</string>
   <string name="search_add_manually_save">Simpen</string>
   <string name="content_description_dismiss_input">Singkirké</string>
@@ -60,5 +73,15 @@
   <string name="dialog_addtohomescreen_action_cancel">Mbatalake</string>
   <string name="download_firefox">Undhuh Firefox</string>
   <string name="gv_prompt_username_hint">Jeneng Panganggo</string>
+  <string name="gv_prompt_password_hint">Tembung wadi</string>
+  <string name="gv_prompt_clear">Busak</string>
+  <string name="security_popup_secure_connection">Sambungan aman</string>
+  <string name="security_popup_insecure_connection">Sambungan ora aman</string>
+  <string name="preference_autocomplete_duplicate_url_error">URL wis ana</string>
+  <string name="find_in_page">Golèki ing kaca</string>
+  <string name="find_in_page_input">Golekì ing kaca</string>
+  <string name="find_in_page_result">%1$d / %2$d</string>
+  <string name="accessibility_find_in_page_result">%1$d saka %2$d</string>
   <string name="http_auth_dialog_username">Jeneng Panganggo</string>
+  <string name="http_auth_dialog_password">Tembung wadi</string>
 </resources>

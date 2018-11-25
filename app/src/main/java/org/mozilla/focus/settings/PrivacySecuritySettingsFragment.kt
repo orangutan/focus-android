@@ -35,13 +35,12 @@ class PrivacySecuritySettingsFragment : BaseSettingsFragment(),
             preferenceScreen.removePreference(biometricPreference)
         }
 
+        val safeBrowsingPreference =
+            findPreference(getString(R.string.pref_key_category_safe_browsing))
+        preferenceScreen.removePreference(safeBrowsingPreference)
+        val cookiesPreference =
+            findPreference(getString(R.string.pref_key_performance_enable_cookies)) as CookiesPreference
         if (!AppConstants.isGeckoBuild) {
-            val safeBrowsingPreference =
-                findPreference(getString(R.string.pref_key_category_safe_browsing))
-            preferenceScreen.removePreference(safeBrowsingPreference)
-            val cookiesPreference =
-                findPreference(getString(R.string.pref_key_performance_enable_cookies)) as CookiesPreference
-
             val cookiesStringsWV =
                 requireContext().resources.getStringArray(R.array.preference_privacy_cookies_options)
                     .filter {
@@ -51,18 +50,23 @@ class PrivacySecuritySettingsFragment : BaseSettingsFragment(),
                     }
             cookiesPreference.entries = cookiesStringsWV.toTypedArray()
             cookiesPreference.entryValues = cookiesStringsWV.toTypedArray()
-        }
 
-        val exceptionsPreference = findPreference(getString(R.string.pref_key_screen_exceptions))
-        if (ExceptionDomains.load(requireContext()).isEmpty()) {
-            exceptionsPreference.isEnabled = false
+            cookiesPreference.setDefaultValue(
+                getString(R.string.preference_privacy_should_block_cookies_no_option)
+            )
+        } else {
+            cookiesPreference.setDefaultValue(
+                getString(R.string.preference_privacy_should_block_cookies_third_party_tracker_cookies_option)
+            )
         }
+        cookiesPreference.updateSummary()
     }
 
     override fun onResume() {
         super.onResume()
         updateBiometricsToggleAvailability()
         updateStealthToggleAvailability()
+        updateExceptionSettingAvailability()
 
         preferenceManager.sharedPreferences.registerOnSharedPreferenceChangeListener(this)
 
@@ -98,10 +102,19 @@ class PrivacySecuritySettingsFragment : BaseSettingsFragment(),
         }
     }
 
+    private fun updateExceptionSettingAvailability() {
+        val exceptionsPreference = findPreference(getString(R.string.pref_key_screen_exceptions))
+        if (ExceptionDomains.load(requireContext()).isEmpty()) {
+            exceptionsPreference.isEnabled = false
+        }
+    }
+
     override fun onPreferenceTreeClick(preference: Preference): Boolean {
         when (preference.key) {
-            resources.getString(R.string.pref_key_screen_exceptions) ->
+            resources.getString(R.string.pref_key_screen_exceptions) -> {
+                TelemetryWrapper.openExceptionsListSetting()
                 navigateToFragment(ExceptionsListFragment())
+            }
         }
         return super.onPreferenceTreeClick(preference)
     }
