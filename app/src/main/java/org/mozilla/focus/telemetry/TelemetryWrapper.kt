@@ -40,6 +40,7 @@ import org.mozilla.telemetry.ping.TelemetryMobileMetricsPingBuilder
 import org.mozilla.telemetry.schedule.jobscheduler.JobSchedulerTelemetryScheduler
 import org.mozilla.telemetry.serialize.JSONPingSerializer
 import org.mozilla.telemetry.storage.FileTelemetryStorage
+import java.net.MalformedURLException
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -54,7 +55,6 @@ import kotlin.collections.HashSet
 object TelemetryWrapper {
     private const val TELEMETRY_APP_NAME_FOCUS = "Focus"
     private const val TELEMETRY_APP_NAME_KLAR = "Klar"
-    private const val TELEMETRY_APP_ENGINE_GECKOVIEW = "GeckoView"
     private const val LAST_MOBILE_METRICS_PINGS = "LAST_MOBILE_METRICS_PINGS"
 
     private val dateFormat = SimpleDateFormat("yyyyMMdd", Locale.US)
@@ -254,9 +254,7 @@ object TelemetryWrapper {
                     .setSettingsProvider(TelemetrySettingsProvider(context))
                     .setCollectionEnabled(telemetryEnabled)
                     .setUploadEnabled(telemetryEnabled)
-                    .setBuildId(TelemetryConfiguration(context).buildId +
-                    (if (AppConstants.isGeckoBuild)
-                        ("-$TELEMETRY_APP_ENGINE_GECKOVIEW") else ""))
+                    .setBuildId(TelemetryConfiguration(context).buildId)
 
             val serializer = JSONPingSerializer()
             val storage = FileTelemetryStorage(configuration, serializer)
@@ -285,12 +283,13 @@ object TelemetryWrapper {
                                 .apply()
                     }
                     .setDefaultSearchProvider(createDefaultSearchProvider(context)))
-
-            TelemetryWrapper.recordActiveExperiments(context)
         } finally {
             StrictMode.setThreadPolicy(threadPolicy)
         }
     }
+
+    val clientId: String
+        get() = TelemetryHolder.get().clientId
 
     private fun createDefaultSearchProvider(context: Context): DefaultSearchMeasurement.DefaultSearchEngineProvider {
         return DefaultSearchMeasurement.DefaultSearchEngineProvider {
@@ -333,17 +332,21 @@ object TelemetryWrapper {
 
     @JvmStatic
     fun addLoadToHistogram(url: String, newLoadTime: Long) {
-        domainMap.add(UrlUtils.stripCommonSubdomains(URL(url).host))
-        numUri++
-        var histogramLoadIndex = (newLoadTime / BUCKET_SIZE_MS).toInt()
+        try {
+            domainMap.add(UrlUtils.stripCommonSubdomains(URL(url).host))
+            numUri++
+            var histogramLoadIndex = (newLoadTime / BUCKET_SIZE_MS).toInt()
 
-        if (histogramLoadIndex > (HISTOGRAM_SIZE - 2)) {
-            histogramLoadIndex = HISTOGRAM_SIZE - 1
-        } else if (histogramLoadIndex < HISTOGRAM_MIN_INDEX) {
-            histogramLoadIndex = HISTOGRAM_MIN_INDEX
+            if (histogramLoadIndex > (HISTOGRAM_SIZE - 2)) {
+                histogramLoadIndex = HISTOGRAM_SIZE - 1
+            } else if (histogramLoadIndex < HISTOGRAM_MIN_INDEX) {
+                histogramLoadIndex = HISTOGRAM_MIN_INDEX
+            }
+
+            histogram[histogramLoadIndex]++
+        } catch (e: MalformedURLException) {
+            // ignore invalid URLs
         }
-
-        histogram[histogramLoadIndex]++
     }
 
     @JvmStatic

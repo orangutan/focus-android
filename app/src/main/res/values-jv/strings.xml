@@ -30,6 +30,7 @@
   <string name="shortcut_erase_long_label">Busak riwayat dlajahan</string>
   <string name="shortcut_erase_and_open_short_label">Busak &amp; bukak</string>
   <string name="shortcut_erase_and_open_long_label">Busak lan bukak %1$s</string>
+  <string name="preference_privacy_and_security_header">Privasi &amp; Kaamanan</string>
   <string name="preference_mozilla_summary">Ngenani %1$s, pitulung</string>
   <string name="preference_category_web_content">Kontèn Wèb</string>
   <string name="preference_category_switching_apps">Ganti aplikasi</string>
@@ -39,6 +40,8 @@
   <string name="preference_search_engine_label">Mesin panggolèk</string>
   <string name="preference_state_on">Uripké</string>
   <string name="preference_state_off">Paténi</string>
+  <string name="preference_switch_autocomplete_topsites">Kanggo Situs Top</string>
+  <string name="preference_category_cookies">Kuki lan Dhata Situs</string>
   <string name="preference_category_data_choices">Pilihan Data</string>
   <string name="preference_autocomplete_learn_more">Sinau liyané</string>
   <string name="preference_autocomplete_add_hint">Témpél utowo leboké URL</string>
@@ -50,6 +53,7 @@
   <string name="preference_privacy_category_cookies">Blokir kuki</string>
   <string name="preference_privacy_should_block_cookies_no_option">Ora</string>
   <string name="preference_privacy_should_block_cookies_yes_option">Ya</string>
+  <string name="preference_category_security">Kaamanan</string>
   <string name="preference_performance_block_javascript">Blokir JavaScript</string>
   <string name="preference_category_mozilla">Mozilla</string>
   <string name="preference_mozilla_telemetry_summary">Sinaoni manèh</string>

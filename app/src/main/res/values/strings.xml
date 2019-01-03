@@ -108,12 +108,6 @@
          This is the label for this shortcut. Android recommends a maximum length of 10 characters. -->
     <string name="shortcut_erase_and_open_short_label">Erase &amp; open</string>
 
-    <!-- The same as 'shortcut_erase_short_label' but more descriptive. The launcher shows this
-         instead of the short title when it has enough space. Android recommends a maximum length
-         of 25 characters.
-         %1$s will be replaced by the app name (e.g. Firefox Focus) -->
-    <string name="shortcut_erase_and_open_long_label">Erase and open %1$s</string>
-
 
     <!-- This is the label of an action we offer when the user selects text in other third-party apps.
          Clicking this action will launch Focus and perform a search in the default search engine. -->
@@ -202,8 +196,11 @@
     <!-- Title of "switch" preference that enables/disables autocomplete for the user-defined list -->
     <string name="preference_switch_autocomplete_user_list">For Sites You Add</string>
 
-    <!-- Summary for the toggle to enable autocomplete for the user-defined list -->
+    <!-- *Deprecated summary* for the toggle to enable autocomplete for the user-defined list -->
     <string name="preference_autocomplete_user_list_summary">Enable to autocomplete more than 450 popular URLs in the address bar.</string>
+
+    <!-- Summary for the toggle to enable autocomplete for the user-defined list -->
+    <string name="preference_autocomplete_user_list_description">Enable to autocomplete sites you add here.</string>
 
     <!-- Preference category: Manage (user-defined) sites -->
     <string name="preference_category_autocomplete_manage_sites">Manage sites</string>
