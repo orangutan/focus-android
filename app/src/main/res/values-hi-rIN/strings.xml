@@ -54,6 +54,7 @@
   <string name="preference_switch_autocomplete_topsites">मुख्य साइटों के लिए</string>
   <string name="preference_autocomplete_topsite_summary">पता बार में 450 से अधिक लोकप्रिय URLs स्वत: पूर्णता के लिए सक्षम करें।</string>
   <string name="preference_switch_autocomplete_user_list">आपके द्वारा जोड़े साइटों के लिए</string>
+  <string name="preference_autocomplete_user_list_description">आपके द्वारा यहां जोड़े गए स्वत: पूर्ण साइटों को सक्षम करें।</string>
   <string name="preference_category_autocomplete_manage_sites">साइटों को प्रबंधित करें</string>
   <string name="preference_autocomplete_subitem_manage_sites">साइटों को प्रबंधित करें</string>
   <string name="preference_autocomplete_action_add">+ अपनी संशोधित URL जोड़ें</string>
@@ -76,6 +77,7 @@
   <string name="preference_language">भाषा</string>
   <string name="preference_language_systemdefault">सिस्टम डिफ़ॉल्ट</string>
   <string name="preference_category_privacy">गोपनीयता</string>
+  <string name="preference_privacy_ads_block_ads">विज्ञापनों और अन्य विक्षोभों को रोकें</string>
   <string name="preference_privacy_block_analytics">विश्लेषणात्मक ट्रैकर्स को अवरुद्ध करें</string>
   <string name="preference_privacy_block_ads">विज्ञापन ट्रैकर्स को अवरुद्ध करें</string>
   <string name="preference_privacy_block_social">सामाजिक ट्रैकर्स को अवरुद्ध करें</string>
@@ -185,6 +187,7 @@
   <string name="firstrun_close_button">ठीक है, समझ गया!</string>
   <string name="firstrun_skip_button">छोड़ें</string>
   <string name="firstrun_next_button">अगला</string>
+  <string name="block_ads_card_title">%1$s विज्ञापनों को अवरुद्ध करने के लिए तैयार है</string>
   <string name="content_blocking_disabled">-</string>
   <string name="dialog_addtohomescreen_action_add">जोड़ें</string>
   <string name="dialog_addtohomescreen_action_cancel">रद्द करें</string>
