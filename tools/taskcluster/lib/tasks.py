@@ -104,7 +104,7 @@ class TaskBuilder(object):
             }
         }
 
-    def craft_push_task(self, signing_task_id, name, description, is_staging, apks=[], scopes=[], channel='internal', commit=False):
+    def build_push_task(self, signing_task_id, name, description, apks=[], scopes=[], channel='internal', commit=False):
         created = datetime.datetime.now()
         expires = taskcluster.fromNow('1 year')
         deadline = taskcluster.fromNow('1 day')

@@ -7,7 +7,8 @@ package org.mozilla.focus.menu.home
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.support.v7.widget.LinearLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -29,7 +30,7 @@ class HomeMenu(
         contentView = LayoutInflater.from(context).inflate(R.layout.menu, null)
 
         with(contentView.list) {
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
             adapter = HomeMenuAdapter(context, this@HomeMenu)
         }
 

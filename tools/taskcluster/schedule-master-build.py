@@ -66,7 +66,7 @@ def generate_compare_locales_task():
         })
 
 
-def generate_ui_test_task(dependencies, engine="Klar", device="ARM"):
+def generate_ui_test_task(dependencies, engine="Klar", device="arm"):
     '''
     :param str engine: Klar, Webview
     :param str device: ARM, X86
@@ -82,9 +82,9 @@ def generate_ui_test_task(dependencies, engine="Klar", device="ARM"):
         raise Exception("ERROR: unknown engine type --> Aborting!")
 
     task_name = "(Focus for Android) UI tests - {0} {1}".format(engine, device)
-    task_description = "Run UI tests for {0} {1} build for Android.".format(engine, device)
-    build_dir = "assemble{0}{1}Debug".format(assemble_engine, device.capitalize())
-    build_dir_test = "assemble{0}{1}DebugAndroidTest".format(assemble_engine, device.capitalize())
+    task_description = "Run UI tests for {0} build for Android.".format(engine, device)
+    build_dir = "assemble{0}Debug".format(assemble_engine, device.capitalize())
+    build_dir_test = "assemble{0}DebugAndroidTest".format(assemble_engine, device.capitalize())
     print('BUILD_DIR: {0}'.format(build_dir))
     print('BUILD_DIR_TEST: {0}'.format(build_dir_test))
     device = device.lower()

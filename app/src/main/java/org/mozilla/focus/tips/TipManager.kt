@@ -17,16 +17,17 @@ import org.mozilla.focus.R.string.tip_explain_allowlist
 import org.mozilla.focus.R.string.tip_open_in_new_tab
 import org.mozilla.focus.R.string.tip_request_desktop
 import org.mozilla.focus.R.string.tip_set_default_browser
+import org.mozilla.focus.R.string.tip_take_survey
 import org.mozilla.focus.exceptions.ExceptionDomains
 import org.mozilla.focus.ext.components
 import org.mozilla.focus.locale.LocaleAwareAppCompatActivity
 import org.mozilla.focus.locale.LocaleManager
 import org.mozilla.focus.telemetry.TelemetryWrapper
+import org.mozilla.focus.utils.Browsers
 import org.mozilla.focus.utils.Settings
 import org.mozilla.focus.utils.SupportUtils
 import org.mozilla.focus.utils.homeScreenTipsExperimentDescriptor
 import org.mozilla.focus.utils.isInExperiment
-import org.mozilla.focus.utils.Browsers
 import java.util.Locale
 import java.util.Random
 
@@ -212,7 +213,7 @@ object TipManager {
     }
 
     // Will not return a tip if tips are disabled or if MAX TIPS have already been shown.
-    @Suppress("ReturnCount") // Using early returns
+    @Suppress("ReturnCount", "ComplexMethod") // Using early returns
     fun getNextTipIfAvailable(context: Context): Tip? {
         if (!context.isInExperiment(homeScreenTipsExperimentDescriptor)) return null
         if (!Settings.getInstance(context).shouldDisplayHomescreenTips()) return null
@@ -227,6 +228,14 @@ object TipManager {
         // Only show three tips before going back to the "Focus" branding
         if (tipsShown == MAX_TIPS_TO_DISPLAY || listOfTips.count() <= 0) {
             return null
+        }
+
+        // Show the survey tip first
+        for (tip in listOfTips) {
+            if (tip.id == tip_take_survey && tip.shouldDisplay()) {
+                listOfTips.remove(tip)
+                return tip
+            }
         }
 
         // Always show the disable tip if it's ready to be displayed

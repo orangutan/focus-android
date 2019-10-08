@@ -6,8 +6,6 @@ package org.mozilla.focus.fragment
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.graphics.drawable.TransitionDrawable
@@ -24,6 +22,8 @@ import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.FrameLayout
 import android.widget.TextView
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.fragment_urlinput.*
 import kotlinx.android.synthetic.main.fragment_urlinput.view.*
 import kotlinx.coroutines.CoroutineScope
@@ -32,7 +32,9 @@ import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import mozilla.components.browser.domains.CustomDomains
-import mozilla.components.browser.domains.DomainAutoCompleteProvider
+import mozilla.components.browser.domains.autocomplete.CustomDomainsProvider
+import mozilla.components.browser.domains.autocomplete.DomainAutocompleteResult
+import mozilla.components.browser.domains.autocomplete.ShippedDomainsProvider
 import mozilla.components.browser.session.Session
 import mozilla.components.support.utils.ThreadUtils
 import mozilla.components.ui.autocomplete.InlineAutocompleteEditText
@@ -58,7 +60,6 @@ import org.mozilla.focus.utils.StatusBarUtils
 import org.mozilla.focus.utils.SupportUtils
 import org.mozilla.focus.utils.UrlUtils
 import org.mozilla.focus.utils.ViewUtils
-import org.mozilla.focus.viewmodel.MainViewModel
 import org.mozilla.focus.whatsnew.WhatsNew
 import java.util.Objects
 import kotlin.coroutines.CoroutineContext
@@ -145,14 +146,16 @@ class UrlInputFragment :
     private var job = Job()
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.Main
-    private val autoCompleteProvider: DomainAutoCompleteProvider = DomainAutoCompleteProvider()
+    private val shippedDomainsProvider = ShippedDomainsProvider()
+    private val customDomainsProvider = CustomDomainsProvider()
+    private var useShipped = false
+    private var useCustom = false
     private var displayedPopupMenu: HomeMenu? = null
 
     @Volatile
     private var isAnimating: Boolean = false
 
     private var session: Session? = null
-    private var model: MainViewModel? = null
 
     private val isOverlay: Boolean
         get() = session != null
@@ -160,7 +163,6 @@ class UrlInputFragment :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        model = ViewModelProviders.of(requireActivity()).get(MainViewModel::class.java)
         searchSuggestionsViewModel = ViewModelProviders.of(this).get(SearchSuggestionsViewModel::class.java)
 
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -200,10 +202,10 @@ class UrlInputFragment :
 
         activity?.let {
             val settings = Settings.getInstance(it.applicationContext)
-            val useCustomDomains = settings.shouldAutocompleteFromCustomDomainList()
-            val useShippedDomains = settings.shouldAutocompleteFromShippedDomainList()
-            autoCompleteProvider.initialize(it.applicationContext, useShippedDomains,
-                useCustomDomains)
+            useCustom = settings.shouldAutocompleteFromCustomDomainList()
+            useShipped = settings.shouldAutocompleteFromShippedDomainList()
+            shippedDomainsProvider.initialize(it.applicationContext)
+            customDomainsProvider.initialize(it.applicationContext)
         }
 
         StatusBarUtils.getStatusBarHeight(keyboardLinearLayout) {
@@ -244,7 +246,7 @@ class UrlInputFragment :
         homeViewTipsLabel.setText(tipText, TextView.BufferType.SPANNABLE)
 
         val deepLinkAction = object : ClickableSpan() {
-            override fun onClick(widget: View?) {
+            override fun onClick(p0: View) {
                 tip.deepLink.invoke()
             }
         }
@@ -291,6 +293,7 @@ class UrlInputFragment :
         listOf(dismissView, clearView).forEach { it.setOnClickListener(this) }
 
         urlView?.setOnFilterListener(::onFilter)
+        urlView?.setOnTextChangeListener(::onTextChange)
         urlView?.imeOptions = urlView.imeOptions or ViewUtils.IME_FLAG_NO_PERSONALIZED_LEARNING
         urlView?.inputType = urlView.inputType or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
 
@@ -650,10 +653,14 @@ class UrlInputFragment :
     }
 
     private fun onCommit() {
-        val input = urlView.autocompleteResult.formattedText.let {
-            if (it.isEmpty() || !URLUtil.isValidUrl(urlView?.text.toString())) {
-                urlView?.text.toString()
-            } else it
+        val input = if (urlView.autocompleteResult == null) {
+            urlView?.text.toString()
+        } else {
+            urlView.autocompleteResult!!.text.let {
+                if (it.isEmpty() || !URLUtil.isValidUrl(urlView?.text.toString())) {
+                    urlView?.text.toString()
+                } else it
+            }
         }
 
         if (!input.trim { it <= ' ' }.isEmpty()) {
@@ -661,14 +668,15 @@ class UrlInputFragment :
 
             ViewUtils.hideKeyboard(urlView)
 
-            if (handleExperimentsTrigger(input)) return
             if (handleL10NTrigger(input)) return
 
             val (isUrl, url, searchTerms) = normalizeUrlAndSearchTerms(input)
 
             openUrl(url, searchTerms)
 
-            TelemetryWrapper.urlBarEvent(isUrl, urlView.autocompleteResult)
+            if (urlView.autocompleteResult != null) {
+                TelemetryWrapper.urlBarEvent(isUrl, urlView.autocompleteResult!!)
+            }
         }
     }
 
@@ -692,14 +700,6 @@ class UrlInputFragment :
 
         if (triggerHandled) clear()
         return triggerHandled
-    }
-
-    private fun handleExperimentsTrigger(input: String): Boolean {
-        if (input == "focus:test") {
-            model?.showExperiments()
-            return true
-        }
-        return false
     }
 
     private fun handleCrashTrigger(input: String) {
@@ -769,6 +769,11 @@ class UrlInputFragment :
         }
     }
 
+    private fun onFilter(searchText: String) {
+        onFilter(searchText, urlView)
+    }
+
+    @Suppress("ComplexMethod")
     private fun onFilter(searchText: String, view: InlineAutocompleteEditText?) {
         // If the UrlInputFragment has already been hidden, don't bother with filtering. Because of the text
         // input architecture on Android it's possible for onFilter() to be called after we've already
@@ -779,13 +784,28 @@ class UrlInputFragment :
         }
 
         view?.let {
-            val result = autoCompleteProvider.autocomplete(searchText)
-            view.applyAutocompleteResult(AutocompleteResult(result.text, result.source, result.size, { result.url }))
+            var result: DomainAutocompleteResult? = null
+            if (useCustom) {
+                result = customDomainsProvider.getAutocompleteSuggestion(searchText)
+            }
+
+            if (useShipped && result == null) {
+                result = shippedDomainsProvider.getAutocompleteSuggestion(searchText)
+            }
+
+            if (result != null) {
+                view.applyAutocompleteResult(AutocompleteResult(
+                        result.text, result.source, result.totalItems, { result.url }))
+            } else {
+                view.noAutocompleteResult()
+            }
         }
+    }
 
-        searchSuggestionsViewModel.setSearchQuery(searchText)
+    private fun onTextChange(text: String, @Suppress("UNUSED_PARAMETER") autocompleteText: String) {
+        searchSuggestionsViewModel.setSearchQuery(text)
 
-        if (searchText.trim { it <= ' ' }.isEmpty()) {
+        if (text.trim { it <= ' ' }.isEmpty()) {
             clearView?.visibility = View.GONE
             searchViewContainer?.visibility = View.GONE
             addToAutoComplete?.visibility = View.GONE

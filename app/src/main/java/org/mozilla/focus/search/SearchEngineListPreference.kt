@@ -7,9 +7,9 @@ package org.mozilla.focus.search
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.drawable.BitmapDrawable
-import android.support.v7.preference.Preference
-import android.support.v7.preference.PreferenceViewHolder
-import android.support.v7.widget.RecyclerView
+import androidx.preference.Preference
+import androidx.preference.PreferenceViewHolder
+import androidx.recyclerview.widget.RecyclerView
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -64,8 +64,9 @@ abstract class SearchEngineListPreference : Preference, CoroutineScope {
     fun refetchSearchEngines() {
         launch(Main) {
             searchEngines = context.components.searchEngineManager
-                    .load(this@SearchEngineListPreference.context)
+                    .loadAsync(this@SearchEngineListPreference.context)
                     .await()
+                    .list
                     .sortedBy { it.name }
             refreshSearchEngineViews(this@SearchEngineListPreference.context)
         }

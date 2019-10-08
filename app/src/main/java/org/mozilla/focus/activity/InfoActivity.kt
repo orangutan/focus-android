@@ -7,7 +7,7 @@ package org.mozilla.focus.activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.widget.Toolbar
+import androidx.appcompat.widget.Toolbar
 import android.util.AttributeSet
 import android.view.View
 
@@ -46,7 +46,7 @@ class InfoActivity : LocaleAwareAppCompatActivity() {
     override fun onCreateView(name: String, context: Context, attrs: AttributeSet): View? {
         if (name == IWebView::class.java.name) {
             // We use a WebView for focus:rights as a workaround to link to other internal pages
-            val view = if (url == LocalizedContent.URL_RIGHTS) {
+            val view = if (url in listOf(LocalizedContent.URL_RIGHTS, LocalizedContent.URL_ABOUT)) {
                 ClassicWebViewProvider().create(context, attrs)
             } else {
                 WebViewProvider.create(context, attrs)

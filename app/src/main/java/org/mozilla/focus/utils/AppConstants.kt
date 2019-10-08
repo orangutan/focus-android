@@ -6,9 +6,6 @@
 package org.mozilla.focus.utils
 
 import org.mozilla.focus.BuildConfig
-import org.mozilla.focus.web.Config
-import org.mozilla.focus.web.GeckoWebViewProvider
-import org.mozilla.focus.web.WebViewProvider
 
 object AppConstants {
     private const val BUILD_TYPE_RELEASE = "release"
@@ -16,18 +13,13 @@ object AppConstants {
     private const val PRODUCT_FLAVOR_KLAR = "klar"
 
     val isKlarBuild: Boolean
-        get() = PRODUCT_FLAVOR_KLAR == BuildConfig.FLAVOR_product
+        get() = PRODUCT_FLAVOR_KLAR == BuildConfig.FLAVOR
 
     val isReleaseBuild: Boolean
         get() = BUILD_TYPE_RELEASE == BuildConfig.BUILD_TYPE
 
     val isGeckoBuild: Boolean
-        get() =
-            if (WebViewProvider.engine == null) {
-                Config.DEFAULT_NEW_RENDERER
-            } else {
-                WebViewProvider.engine?.javaClass?.simpleName == GeckoWebViewProvider::class.java.simpleName
-            }
+        get() = true
 
     val isDevBuild: Boolean
         get() = BUILD_TYPE_DEBUG == BuildConfig.BUILD_TYPE

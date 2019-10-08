@@ -111,8 +111,10 @@
 ####################################################################################################
 
 -dontwarn android.**
+-dontwarn androidx.**
 -dontwarn com.google.**
 -dontwarn org.mozilla.geckoview.**
+-dontwarn mozilla.components.**
 
 # https://developer.android.com/topic/libraries/architecture/release-notes.html
 # According to the docs this won't be needed when 1.0 of the library is released.
@@ -120,6 +122,14 @@
 
 # Temporary fix until we can use androidx
 -dontwarn mozilla.components.service.fretboard.scheduler.workmanager.**
+
+# Fix for ViewModels
+-keep class * extends androidx.lifecycle.ViewModel {
+    <init>();
+}
+-keep class * extends androidx.lifecycle.AndroidViewModel {
+    <init>(android.app.Application);
+}
 
 ####################################################################################################
 # Kotlinx
@@ -130,3 +140,14 @@
 -keepclassmembernames class kotlinx.** {
     volatile <fields>;
 }
+-dontwarn kotlinx.atomicfu.**
+
+####################################################################################################
+# snakeyaml
+####################################################################################################
+
+-dontwarn java.beans.PropertyDescriptor
+-dontwarn java.beans.Introspector
+-dontwarn java.beans.BeanInfo
+-dontwarn java.beans.IntrospectionException
+-dontwarn java.beans.FeatureDescriptor

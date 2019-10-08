@@ -4,8 +4,8 @@
 
 package org.mozilla.focus.helpers
 
-import android.support.test.InstrumentationRegistry
-import android.support.test.espresso.IdlingResource
+import androidx.test.espresso.IdlingResource
+import androidx.test.platform.app.InstrumentationRegistry
 import org.mozilla.focus.FocusApplication
 
 /**

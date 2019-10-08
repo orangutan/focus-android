@@ -11,6 +11,8 @@
     <string name="pref_key_privacy_block_ads" translatable="false"><xliff:g id="preference_key">pref_privacy_block_ads</xliff:g></string>
     <string name="pref_key_privacy_block_analytics" translatable="false"><xliff:g id="preference_key">pref_privacy_block_analytics</xliff:g></string>
     <string name="pref_key_privacy_block_social" translatable="false"><xliff:g id="preference_key">pref_privacy_block_social</xliff:g></string>
+    <string name="pref_key_privacy_block_cryptomining" translatable="false"><xliff:g id="preference_key">pref_privacy_block_cryptomining</xliff:g></string>
+    <string name="pref_key_privacy_block_fingerprinting" translatable="false"><xliff:g id="preference_key">pref_privacy_block_fingerprinting</xliff:g></string>
     <string name="pref_key_privacy_block_other" translatable="false"><xliff:g id="preference_key">pref_privacy_block_other</xliff:g></string>
 
     <string name="pref_key_performance_block_webfonts" translatable="false"><xliff:g id="preference_key">pref_performance_block_webfonts</xliff:g></string>
@@ -58,6 +60,7 @@
     <string name="has_opened_new_tab" translatable="false"><xliff:g id="preference_key">has_opened_new_tab</xliff:g></string>
     <string name="has_added_to_home_screen" translatable="false"><xliff:g id="preference_key">has_added_to_home_screen</xliff:g></string>
     <string name="has_requested_desktop" translatable="false"><xliff:g id="preference_key">has_requested_desktop</xliff:g></string>
+    <string name="has_taken_survey" translatable="false"><xliff:g id="preference_key">has_taken_survey</xliff:g></string>
     <string name="app_launch_count" translatable="false"><xliff:g id="preference_key">app_launch_count</xliff:g></string>
     <string name="pref_key_category_safe_browsing" translatable="false"><xliff:g id="preference_key">safe_browsing_category</xliff:g></string>
 

@@ -7,11 +7,11 @@ package org.mozilla.focus.autocomplete
 import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
-import android.support.v4.app.Fragment
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.helper.ItemTouchHelper
-import android.support.v7.widget.helper.ItemTouchHelper.SimpleCallback
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.ItemTouchHelper.SimpleCallback
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -119,7 +119,7 @@ open class AutocompleteListFragment : Fragment(), CoroutineScope {
             inflater.inflate(R.layout.fragment_autocomplete_customdomains, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        domainList.layoutManager = LinearLayoutManager(activity, LinearLayoutManager.VERTICAL, false)
+        domainList.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         domainList.adapter = DomainListAdapter()
         domainList.setHasFixedSize(true)
 

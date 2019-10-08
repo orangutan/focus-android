@@ -28,6 +28,7 @@ tasks:
           - -cx
           - >-
             git fetch ${event.pull_request.head.repo.clone_url} ${event.pull_request.head.ref}
+            && git submodule update --init
             && git config advice.detachedHead false
             && git checkout ${event.pull_request.head.sha}
             && echo "--" > .adjust_token
@@ -92,6 +93,7 @@ tasks:
             - -cx
             - >-
               git fetch origin
+              && git submodule update --init
               && git config advice.detachedHead false
               && git checkout ${event.after}
               && python tools/taskcluster/schedule-master-build.py
@@ -164,6 +166,7 @@ tasks:
             - -cx
             - >-
               git fetch origin --tags
+              && git submodule update --init
               && git config advice.detachedHead false
               && git checkout ${event.release.tag_name}
               && python tools/taskcluster/release.py \
@@ -174,8 +177,7 @@ tasks:
                 --apk focusArm/release/app-focus-arm-release-unsigned.apk \
                 --apk focusAarch64/release/app-focus-aarch64-release-unsigned.apk \
                 --apk klarArm/release/app-klar-arm-release-unsigned.apk \
-                --apk klarAarch64/release/app-klar-aarch64-release-unsigned.apk \
-                --date ${now}
+                --apk klarAarch64/release/app-klar-aarch64-release-unsigned.apk
           artifacts:
             public/task-graph.json:
               type: file
@@ -196,7 +198,7 @@ tasks:
           description: Scheduling tasks for releasing Focus/Klar
           owner: ${event.sender.login}@users.noreply.github.com
           source: ${repository}/raw/${event.release.tag_name}/.taskcluster.yml
-# Nighly builds
+# Nightly builds
   - $if: 'tasks_for == "cron"'
     then:
       $let:
@@ -223,25 +225,15 @@ tasks:
         priority: medium
         retries: 5
         scopes:
-          $flatten:
-            - queue:scheduler-id:${scheduler_id}
-            - queue:create-task:highest:aws-provisioner-v1/gecko-focus
-            - project:mobile:focus:releng:signing:format:autograph_focus
-            - $if: is_mozilla_mobile_repo
-              then:
-                - queue:create-task:highest:scriptworker-prov-v1/mobile-signing-v1
-                - queue:create-task:highest:scriptworker-prov-v1/mobile-pushapk-v1
-                - project:mobile:focus:releng:signing:cert:release-signing
-                - project:mobile:focus:releng:googleplay:product:focus
-                - secrets:get:project/focus/tokens
-                - queue:route:index.project.mobile.focus.signed-nightly.*
-              else:
-                - queue:create-task:highest:scriptworker-prov-v1/mobile-signing-dep-v1
-                - queue:create-task:highest:scriptworker-prov-v1/mobile-pushapk-dep-v1
-                - project:mobile:focus:releng:signing:cert:dep-signing
-                - project:mobile:focus:releng:googleplay:product:focus:dep
-                - secrets:get:garbage/staging/project/focus/tokens
-                - queue:route:index.project.mobile.focus.staging-signed-nightly.*
+          - queue:scheduler-id:${scheduler_id}
+          - queue:create-task:highest:aws-provisioner-v1/gecko-focus
+          - queue:create-task:highest:scriptworker-prov-v1/mobile-signing-v1
+          - queue:create-task:highest:scriptworker-prov-v1/mobile-pushapk-v1
+          - project:mobile:focus:releng:signing:cert:release-signing
+          - project:mobile:focus:releng:signing:format:autograph_focus
+          - project:mobile:focus:releng:googleplay:product:focus
+          - secrets:get:project/focus/tokens
+          - queue:route:index.project.mobile.focus.nightly.latest
         routes:
           - statuses  # Automatically added by taskcluster-github. It must be explicit because of Chain of Trust
         payload:
@@ -262,19 +254,17 @@ tasks:
             - --login
             - -cx
             - >-
-              cd ..
-              && git clone ${repository} repository
-              && cd repository
+              git fetch origin
+              && git reset --hard origin/master
+              && git submodule update --init
               && python tools/taskcluster/release.py \
                 --channel nightly \
                 --commit \
-                --output /opt/repository/app/build/outputs/apk \
+                --output /opt/focus-android/app/build/outputs/apk \
                 --apk focusArm/nightly/app-focus-arm-nightly-unsigned.apk \
                 --apk focusAarch64/nightly/app-focus-aarch64-nightly-unsigned.apk \
                 --apk klarArm/nightly/app-klar-arm-nightly-unsigned.apk \
-                --apk klarAarch64/nightly/app-klar-aarch64-nightly-unsigned.apk \
-                --date ${now} \
-                ${command_staging_flag}
+                --apk klarAarch64/nightly/app-klar-aarch64-nightly-unsigned.apk
           artifacts:
             public/task-graph.json:
               type: file

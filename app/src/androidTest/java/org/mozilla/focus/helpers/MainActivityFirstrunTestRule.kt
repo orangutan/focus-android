@@ -5,15 +5,12 @@
 package org.mozilla.focus.helpers
 
 import android.preference.PreferenceManager
-import android.support.annotation.CallSuper
-import android.support.test.InstrumentationRegistry
-import android.support.test.rule.ActivityTestRule
-
-import org.mozilla.focus.activity.MainActivity
-
+import androidx.annotation.CallSuper
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.ActivityTestRule
 import mozilla.components.support.utils.ThreadUtils
+import org.mozilla.focus.activity.MainActivity
 import org.mozilla.focus.ext.components
-
 import org.mozilla.focus.fragment.FirstrunFragment.Companion.FIRSTRUN_PREF
 import org.mozilla.focus.session.removeAllAndCloseAllSessions
 
@@ -40,7 +37,7 @@ open class MainActivityFirstrunTestRule(private val showFirstRun: Boolean) :
         activity.finishAndRemoveTask()
 
         val sessionManager =
-            InstrumentationRegistry.getTargetContext().applicationContext.components.sessionManager
+            InstrumentationRegistry.getInstrumentation().targetContext.applicationContext.components.sessionManager
 
         ThreadUtils.postToMainThread(Runnable { sessionManager.removeAllAndCloseAllSessions() })
     }

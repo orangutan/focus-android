@@ -55,9 +55,9 @@ Before you attempt to make a contribution please read the [Community Participati
   ```
 
 3. Make sure to select the correct build variant in Android Studio:
-**focusWebviewArmDebug** for ARM
-**focusWebviewX86Debug** for X86
-**focusWebviewAarch64Debug** for ARM64
+**focusArmDebug** for ARM
+**focusX86Debug** for X86
+**focusAarch64Debug** for ARM64
 
 ## Pre-push hooks
 To reduce review turn-around time, we'd like all pushes to run tests locally. We'd

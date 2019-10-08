@@ -19,8 +19,8 @@ android {
         targetSdkVersion 28
         versionCode 11 // This versionCode is "frozen" for local builds. For "release" builds we
                        // override this with a generated versionCode at build time.
-        versionName "9.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        versionName "8.0.22"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         multiDexEnabled true
     }
@@ -45,7 +45,7 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
             applicationIdSuffix ".debug"
@@ -58,10 +58,6 @@ android {
         unitTests {
             includeAndroidResources = true
         }
-    }
-
-    aaptOptions {
-        noCompress 'so'
     }
 
     flavorDimensions "product", "abi"
@@ -79,16 +75,23 @@ android {
             applicationIdSuffix ".klar"
         }
 
-        x86 {
-            dimension "abi"
-        }
-
         arm {
             dimension "abi"
+            ndk {
+                abiFilter "armeabi-v7a"
+            }
         }
-
         aarch64 {
             dimension "abi"
+            ndk {
+                abiFilter "arm64-v8a"
+            }
+        }
+        x86 {
+            dimension "abi"
+            ndk {
+                abiFilter "x86"
+            }
         }
     }
 
@@ -129,6 +132,11 @@ android {
         klarArmNightly.root = 'src/klarNightly'
         klarAarch64Nightly.root = 'src/klarNightly'
     }
+
+    packagingOptions {
+        pickFirst 'META-INF/atomicfu.kotlin_module'
+        pickFirst 'META-INF/proguard/coroutines.pro'
+    }
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
@@ -138,84 +146,50 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
                 "-Xuse-experimental=kotlinx.coroutines.ObsoleteCoroutinesApi"]
 }
 
-repositories {
-    maven {
-        //  For the latest version of GeckoView (moving target!):
-        //
-        //  Look at the Latest Firefox 64 on the mozilla-release repository:
-        //  hg.mozilla.org/releases/mozilla-release/branches
-        //
-        //  Click on the changeset ID to find the matching changeset/commit ID (shortened).
-        //  For the example tag above that's 5b5e620e33ee.
-        //
-        //  Now go to the list of revisions to find the matching changeset
-        //  (It should start with the ID you got from the tag, remember the full ID!):
-        //  tools.taskcluster.net/index/gecko.v2.mozilla-release.revision
-        //
-        //  Click through until you find the artifacts (revision -> mobile -> android-api-16-opt).
-        //
-        //  Remember the version of the artifacts. In the example above that's: 61.0.20180611134439
-
-        // ARM GeckoView builds
-        url "https://index.taskcluster.net/v1/task/gecko.v2.mozilla.revision" +
-                ".${geckoview_revision}.mobile.android-api-16-opt/artifacts/public/android/maven"
-    }
-    maven {
-        // x86 GeckoView builds
-        url "https://index.taskcluster.net/v1/task/gecko.v2.mozilla.revision" +
-                ".${geckoview_revision}.mobile.android-x86-opt/artifacts/public/android/maven"
-    }
-    maven {
-        // aarch64 builds
-        url "https://index.taskcluster.net/v1/task/gecko.v2.mozilla.revision" +
-                ".${geckoview_revision}.mobile.android-aarch64-opt/artifacts/public/android/maven"
-    }
-}
-
 dependencies {
-    implementation "com.android.support:appcompat-v7:$support_libraries_version"
-    implementation "com.android.support:customtabs:$support_libraries_version"
-    implementation "com.android.support:design:$support_libraries_version"
-    implementation "com.android.support:cardview-v7:$support_libraries_version"
-    implementation "com.android.support:recyclerview-v7:$support_libraries_version"
-    implementation "com.android.support:support-v4:$support_libraries_version"
-    implementation "com.android.support:preference-v7:$support_libraries_version"
-    implementation 'io.sentry:sentry-android:1.7.9'
+    implementation "androidx.appcompat:appcompat:$support_libraries_version"
+    implementation "androidx.browser:browser:$support_libraries_version"
+    implementation "com.google.android.material:material:$support_libraries_version"
+    implementation "androidx.cardview:cardview:$support_libraries_version"
+    implementation "androidx.recyclerview:recyclerview:$support_libraries_version"
+    implementation "androidx.legacy:legacy-support-v4:$support_libraries_version"
+    implementation "androidx.preference:preference:$support_libraries_version"
+    implementation 'io.sentry:sentry-android:1.7.10'
 
-    implementation "android.arch.lifecycle:extensions:$architecture_components_version"
+    implementation "androidx.lifecycle:lifecycle-extensions:$architecture_components_version"
 
     compileOnly 'net.jcip:jcip-annotations:1.0'
     compileOnly "com.github.spotbugs:spotbugs-annotations:$spotbugs_version"
     implementation("com.google.code.findbugs:jsr305:3.0.2")
 
-    implementation "org.mozilla.components:browser-session:$mozilla_components_version"
     implementation "org.mozilla.components:browser-domains:$mozilla_components_version"
-    implementation "org.mozilla.components:browser-search:$mozilla_components_version"
-    implementation "org.mozilla.components:concept-engine:$mozilla_components_version"
-    implementation "org.mozilla.components:ui-autocomplete:$mozilla_components_version"
-    implementation "org.mozilla.components:ui-colors:$mozilla_components_version"
-    implementation "org.mozilla.components:service-telemetry:$mozilla_components_version"
     implementation "org.mozilla.components:browser-errorpages:$mozilla_components_version"
+    implementation "org.mozilla.components:browser-search:$mozilla_components_version"
+    implementation "org.mozilla.components:browser-session:$mozilla_components_version"
+    implementation "org.mozilla.components:browser-state:$mozilla_components_version"
+    implementation "org.mozilla.components:concept-engine:$mozilla_components_version"
+    implementation "org.mozilla.components:feature-customtabs:$mozilla_components_version"
+    implementation "org.mozilla.components:lib-crash:$mozilla_components_version"
+    implementation "org.mozilla.components:lib-fetch-httpurlconnection:$mozilla_components_version"
+    implementation "org.mozilla.components:service-telemetry:$mozilla_components_version"
     implementation "org.mozilla.components:service-fretboard:$mozilla_components_version", {
         exclude group: 'android.arch.work', module: 'work-runtime'
     }
     implementation "org.mozilla.components:support-ktx:$mozilla_components_version"
     implementation "org.mozilla.components:support-utils:$mozilla_components_version"
-    implementation "org.mozilla.components:lib-crash:$mozilla_components_version"
+    implementation "org.mozilla.components:ui-autocomplete:$mozilla_components_version"
+    implementation "org.mozilla.components:ui-colors:$mozilla_components_version"
 
-    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.14.1'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
 
     focusImplementation 'com.adjust.sdk:adjust-android:4.11.4'
     focusImplementation 'com.android.installreferrer:installreferrer:1.0' // Required by Adjust
 
-    armImplementation ("org.mozilla.geckoview:geckoview-armeabi-v7a:${geckoview_version}")
-    x86Implementation ("org.mozilla.geckoview:geckoview-x86:${geckoview_version}")
-    aarch64Implementation ("org.mozilla.geckoview:geckoview-arm64-v8a:${geckoview_version}")
-    implementation "com.android.support:palette-v7:$support_libraries_version" // required to force GV dependency version
+    implementation "org.mozilla.components:browser-engine-gecko-nightly:$mozilla_components_version"
+    implementation "org.mozilla.geckoview:geckoview-nightly:$gecko_nightly_version"
+    implementation "androidx.palette:palette:$support_libraries_version"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.3.1"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.3.1"
@@ -224,15 +198,13 @@ dependencies {
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine:5.3.1"
     testImplementation "org.robolectric:robolectric:4.0-alpha-3" // required to support api level 28
     testImplementation 'org.mockito:mockito-core:2.21.0'
-    testImplementation "android.arch.core:core-testing:${architecture_components_version}"
+    testImplementation "androidx.arch.core:core-testing:${architecture_components_version}"
 
-    androidTestImplementation 'com.android.support.test.uiautomator:uiautomator-v18:2.1.3'
-
-    androidTestImplementation "com.android.support.test.espresso:espresso-core:$espresso_version", {
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version", {
         exclude group: 'com.android.support', module: 'support-annotations'
     }
-    androidTestImplementation "com.android.support.test.espresso:espresso-idling-resource:$espresso_version"
-    androidTestImplementation "com.android.support.test.espresso:espresso-web:$espresso_version", {
+    androidTestImplementation "androidx.test.espresso:espresso-idling-resource:$espresso_version"
+    androidTestImplementation "androidx.test.espresso:espresso-web:$espresso_version", {
         exclude group: 'com.android.support', module: 'support-annotations'
     }
 
@@ -242,18 +214,18 @@ dependencies {
     androidTestImplementation "tools.fastlane:screengrab:1.2.0", {
         exclude group: 'com.android.support', module: 'support-annotations'
     }
-    androidTestImplementation 'com.android.support.test.espresso:espresso-contrib:2.2.2', {
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.1.0-alpha4', {
         exclude group: 'com.android.support', module: 'support-annotations'
         exclude group: 'com.android.support', module: 'support-v4'
         exclude group: 'com.android.support', module: 'design'
         exclude group: 'com.android.support', module: 'recyclerview-v7'
     }
-    implementation 'com.android.support.test:runner:1.0.2'
-    testImplementation 'com.android.support.test:rules:1.0.2'
+    androidTestImplementation 'androidx.test:core:1.2.0'
+    testImplementation 'androidx.test:runner:1.2.0'
+    testImplementation 'androidx.test:rules:1.2.0'
 
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    implementation 'com.jakewharton:process-phoenix:2.0.0'
-    debugImplementation 'com.facebook.stetho:stetho:1.5.0'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    debugImplementation 'com.facebook.stetho:stetho:1.5.1'
 }
 // -------------------------------------------------------------------------------------------------
 //  Dynamically set versionCode (See tools/build/versionCode.gradle
@@ -307,7 +279,9 @@ task buildBlocklists(type:Copy) {
     // Android can't handle dashes in the filename, so we need to rename:
     rename 'disconnect-blacklist.json', 'blocklist.json'
     rename 'disconnect-entitylist.json', 'entitylist.json'
-    // google_mapping.json already has an expected name
+    rename { String filename ->
+        return filename.replaceAll("-", "_").toLowerCase()
+    }
 }
 
 clean.doLast {
@@ -345,14 +319,6 @@ android.applicationVariants.all { variant ->
         buildConfigField 'String', 'ADJUST_TOKEN', 'null'
         println("--")
     }
-}
-
-// -------------------------------------------------------------------------------------------------
-// Gecko: Put GeckoVersion into BuildConfig
-// -------------------------------------------------------------------------------------------------
-
-android.applicationVariants.all {
-    buildConfigField 'String', 'GECKOVIEW_VERSION', "\"${geckoview_version}\""
 }
 
 // -------------------------------------------------------------------------------------------------
