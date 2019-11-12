@@ -18,7 +18,7 @@ class TaskBuilder(object):
         self.source = source
         self.scheduler_id = scheduler_id
 
-    def build_task(self, name, description, command, dependencies = [], artifacts = {}, scopes = [], features = {}, worker_type = 'github-worker'):
+    def build_task(self, name, description, command, dependencies = [], artifacts = {}, scopes = [], routes = [], features = {}):
         created = datetime.datetime.now()
         expires = taskcluster.fromNow('1 year')
         deadline = taskcluster.fromNow('1 day')
@@ -29,7 +29,7 @@ class TaskBuilder(object):
         })
 
         return {
-            "workerType": worker_type,
+            "workerType": "b-linux",
             "taskGroupId": self.task_id,
             "schedulerId": self.scheduler_id,
             "expires": taskcluster.stringDate(expires),
@@ -55,7 +55,7 @@ class TaskBuilder(object):
                 "artifacts": artifacts,
                 "deadline": taskcluster.stringDate(deadline)
             },
-            "provisionerId": "aws-provisioner-v1",
+            "provisionerId": "mobile-3",
             "metadata": {
                 "name": name,
                 "description": description,
@@ -71,7 +71,11 @@ class TaskBuilder(object):
         deadline = taskcluster.fromNow('1 day')
 
         return {
+<<<<<<< HEAD
             "workerType": 'mobile-signing-dep-v1' if is_staging else 'mobile-signing-v1',
+=======
+            "workerType": 'mobile-3-signing',
+>>>>>>> upstream/master
             "taskGroupId": self.task_id,
             "schedulerId": self.scheduler_id,
             "expires": taskcluster.stringDate(expires),
@@ -95,7 +99,7 @@ class TaskBuilder(object):
                     }
                 ]
             },
-            "provisionerId": "scriptworker-prov-v1",
+            "provisionerId": "scriptworker-k8s",
             "metadata": {
                 "name": name,
                 "description": description,
@@ -110,7 +114,11 @@ class TaskBuilder(object):
         deadline = taskcluster.fromNow('1 day')
 
         return {
+<<<<<<< HEAD
             "workerType": 'mobile-pushapk-dep-v1' if is_staging else 'mobile-pushapk-v1',
+=======
+            "workerType": 'mobile-3-pushapk',
+>>>>>>> upstream/master
             "taskGroupId": self.task_id,
             "schedulerId": self.scheduler_id,
             "expires": taskcluster.stringDate(expires),
@@ -134,7 +142,7 @@ class TaskBuilder(object):
                     }
                 ]
             },
-            "provisionerId": "scriptworker-prov-v1",
+            "provisionerId": "scriptworker-k8s",
             "metadata": {
                 "name": name,
                 "description": description,

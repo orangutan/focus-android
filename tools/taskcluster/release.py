@@ -62,7 +62,6 @@ def generate_build_task(apks, tag, is_staging):
             "chainOfTrust": True
         },
         artifacts = artifacts,
-        worker_type='gecko-focus',
         scopes=[
             "secrets:get:garbage/staging/project/focus/tokens" if is_staging else "secrets:get:project/focus/tokens"
         ])
